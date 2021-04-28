@@ -52,20 +52,22 @@ class Training:
 
     def _train_epoch(self, device):
         self.model.train()
-        for (x_train, y_train, y_teacher_train) in self.train_ds:
+        for sample in self.train_ds:
+            x_train, y_train, y_teacher_train = sample['image'], sample["label"], sample["teacher"]
             x_train = x_train.to(device)
             y_train = y_train.to(device)
             y_teacher_train = y_teacher_train.to(device)
             self._train_step(x_train, y_train, y_teacher_train)
         self.model.eval()
-        for (x_test, y_test, y_teacher_test) in self.test_ds:
+        for sample in self.test_ds:
+            x_test, y_test, y_teacher_test = sample['image'], sample["label"], sample["teacher"]
             x_test = x_test.to(device)
             y_test = y_test.to(device)
             y_teacher_test = y_teacher_test.to(device)
             self._test_step(x_test, y_test, y_teacher_test)
 
     def _train_step(self, x_train, y_train, y_teacher_train):
-        self.optimizer.zero_grad()
+        self.optimizer.zero_grad(set_to_none=True)
         with autocast():
             y_pred = self.model(x_train)
             loss = self.loss_fn(y_pred, [y_train, y_teacher_train])
@@ -74,6 +76,7 @@ class Training:
         self.scaler.update()
         self.train_loss.update(loss)
 
+    @torch.no_grad()
     def _test_step(self, x_test, y_test, y_teacher_test):
         y_pred = self.model(x_test)
         loss = self.loss_fn(y_pred, [y_test, y_teacher_test])

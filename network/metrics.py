@@ -4,7 +4,7 @@ import torch
 class DiceScore:
     def __init__(self):
         self._dice_scores = []
-        self.axis = [2, 3, 4]
+        self.axis = (1,2,3)
         self.smooth = 1e-7
 
     def reset(self):

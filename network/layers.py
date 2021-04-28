@@ -11,21 +11,21 @@ class Conv3DUnet(nn.Module):
         self.kernel_size = kernel_size
 
         self.conv_1 = nn.Conv3d(in_channels=in_filters, out_channels=out_filters, kernel_size=self.kernel_size,
-                                stride=1, padding=1, padding_mode='zeros')
+                                stride=1, padding=1, padding_mode='zeros', bias=False)
+        self.batch_1 = nn.BatchNorm3d(num_features=out_filters)
         self.act_1 = nn.LeakyReLU()
-        self.batch_1 = nn.BatchNorm3d(num_features=1)
         self.conv_2 = nn.Conv3d(in_channels=out_filters, out_channels=out_filters, kernel_size=self.kernel_size,
-                                stride=1, padding=1, padding_mode='zeros')
+                                stride=1, padding=1, padding_mode='zeros', bias=False)
+        self.batch_2 = nn.BatchNorm3d(num_features=out_filters)
         self.act_2 = nn.LeakyReLU()
-        self.batch_2 = nn.BatchNorm3d(num_features=1)
 
     def forward(self, x):
         x = self.conv_1(x)
-        x = self.act_1(x)
         x = self.batch_1(x)
+        x = self.act_1(x)
         x = self.conv_2(x)
-        x = self.act_2(x)
         x = self.batch_2(x)
+        x = self.act_2(x)
         return x
 
 
@@ -56,12 +56,15 @@ class Encoder3DUnet(nn.Module):
 class Decoder3DUnet(nn.Module):
     def __init__(self, base_filters):
         super().__init__()
-        self.up_u0 = nn.Upsample(size=3, scale_factor=(2, 2, 2), mode='trilinear')
-        self.conv_u0 = Conv3DUnet(in_filters=base_filters * np.power(2, 3), out_filters=base_filters * np.power(2, 2))
-        self.up_u1 = nn.Upsample(size=3, scale_factor=(2, 2, 2), mode='trilinear')
-        self.conv_u1 = Conv3DUnet(in_filters=base_filters * np.power(2, 2), out_filters=base_filters * np.power(2, 1))
-        self.up_u2 = nn.Upsample(size=3, scale_factor=(2, 2, 2), mode='trilinear')
-        self.conv_u2 = Conv3DUnet(in_filters=base_filters * np.power(2, 1), out_filters=base_filters)
+        self.up_u0 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.conv_u0 = Conv3DUnet(in_filters=base_filters * np.power(2, 3) + base_filters * np.power(2, 2),
+                                  out_filters=base_filters * np.power(2, 2))
+        self.up_u1 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.conv_u1 = Conv3DUnet(in_filters=base_filters * np.power(2, 2) + base_filters * np.power(2, 1),
+                                  out_filters=base_filters * np.power(2, 1))
+        self.up_u2 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.conv_u2 = Conv3DUnet(in_filters=base_filters * np.power(2, 1) + base_filters * np.power(2, 0),
+                                  out_filters=base_filters)
 
     def forward(self, x):
         up3 = self.up_u0(x[3])
@@ -79,7 +82,7 @@ class Classification3DUnet(nn.Module):
     def __init__(self, base_filters):
         super().__init__()
         self.conv = nn.Conv3d(in_channels=base_filters, out_channels=1, kernel_size=1,
-                              stride=1, padding=1, padding_mode='zeros')
+                              stride=1, padding=0)
         self.act = nn.Sigmoid()
 
     def forward(self, x):

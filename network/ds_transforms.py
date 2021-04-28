@@ -78,6 +78,6 @@ class ToTensor(object):
         image = np.expand_dims(image.transpose((2, 0, 1)), axis=0)
         label = np.expand_dims(label.transpose((2, 0, 1)), axis=0)
         teacher = np.expand_dims(teacher.transpose((2, 0, 1)), axis=0)
-        return {'image': torch.from_numpy(image),
-                'label': torch.from_numpy(label),
-                'teacher': torch.from_numpy(teacher)}
+        return {'image': torch.tensor(image, dtype=torch.float),
+                'label': torch.tensor(label, dtype=torch.int),
+                'teacher': torch.tensor(teacher, dtype=torch.float)}

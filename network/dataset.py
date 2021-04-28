@@ -42,5 +42,5 @@ class MRIDataset(Dataset):
 
 
 def train_val_dataset(dataset, val_split=0.25):
-    train_idx, val_idx = split(np.arange(len(dataset)), test_size=val_split)
+    train_idx, val_idx = split(np.arange(dataset), test_size=val_split)
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
