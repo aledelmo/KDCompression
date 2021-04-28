@@ -28,13 +28,13 @@ class Training:
 
         self.scaler = GradScaler()
 
-    def train_model(self, epochs):
+    def train_model(self, epochs, device):
         print('Training model...')
         sleep(0.01)
         with tqdm(range(epochs), desc="Training", unit="epoch") as pbar:
             for epoch in pbar:
                 sleep(0.01)
-                self._train_epoch()
+                self._train_epoch(device)
 
                 self.summary_writer_train.add_scalar("Loss", self.train_loss.compute(), epoch)
                 self.summary_writer_test.add_scalar("Loss", self.test_loss.compute(), epoch)
@@ -50,24 +50,35 @@ class Training:
         self.summary_writer_train.close()
         self.summary_writer_test.close()
 
-    def _train_epoch(self):
-        for (x_train, y_train) in self.train_ds:
-            self._train_step(x_train, y_train)
-        for (x_test, y_test) in self.test_ds:
-            self._test_step(x_test, y_test)
+    def _train_epoch(self, device):
+        self.model.train()
+        for (x_train, y_train, y_teacher_train) in self.train_ds:
+            x_train = x_train.to(device)
+            y_train = y_train.to(device)
+            y_teacher_train = y_teacher_train.to(device)
+            self._train_step(x_train, y_train, y_teacher_train)
+        self.model.eval()
+        for (x_test, y_test, y_teacher_test) in self.test_ds:
+            x_test = x_test.to(device)
+            y_test = y_test.to(device)
+            y_teacher_test = y_teacher_test.to(device)
+            self._test_step(x_test, y_test, y_teacher_test)
 
-    def _train_step(self, x_train, y_train):
+    def _train_step(self, x_train, y_train, y_teacher_train):
         self.optimizer.zero_grad()
         with autocast():
             y_pred = self.model(x_train)
-            loss = self.loss_fn(y_pred, y_train)
+            loss = self.loss_fn(y_pred, [y_train, y_teacher_train])
         self.scaler.scale(loss).backward()
         self.scaler.step(self.optimizer)
         self.scaler.update()
         self.train_loss.update(loss)
 
-    def _test_step(self, x_test, y_test):
+    def _test_step(self, x_test, y_test, y_teacher_test):
         y_pred = self.model(x_test)
-        loss = self.loss_fn(y_pred, y_test)
+        loss = self.loss_fn(y_pred, [y_test, y_teacher_test])
         self.test_loss.update(loss)
         self.metric_fn.update(y_pred, y_test)
+
+    def save_model(self, path):
+        torch.save(self.model.state_dict(), path)

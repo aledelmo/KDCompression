@@ -18,3 +18,11 @@ class DiceLoss(_Loss):
         denominator = ground_o + pred_o + self.smooth
         dice = 2 * numerator / denominator
         return torch.mean(dice)
+
+
+class KDLoss(DiceLoss):
+    def forward(self, input, target):
+        hard_labels = target[0]
+        teacher_labels = target[1]
+        return 1. - self.dice_score(input, hard_labels) + torch.nn.KLDivLoss(input, teacher_labels,
+                                                                             reduction='batchmean')
