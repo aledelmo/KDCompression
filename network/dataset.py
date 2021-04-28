@@ -8,11 +8,11 @@ from sklearn.model_selection import train_test_split as split
 
 
 class MRIDataset(Dataset):
-    def __init__(self, img_dir, transform=None):
+    def __init__(self, img_dir, teacher_dir, transform=None):
         self.imgs = sorted(glob.glob(os.path.join(img_dir, '*[tT]2*.nii.gz')))
         self.masks = sorted(glob.glob(os.path.join(img_dir, '*[mM]ask*.nii.gz')))
         self.labels = sorted(glob.glob(os.path.join(img_dir, '*[sS]egmentation*.nii.gz')))
-        self.teacher_labels = sorted(glob.glob(os.path.join(img_dir, '*[tT]eacher*.nii.gz')))
+        self.teacher_labels = sorted(glob.glob(os.path.join(teacher_dir, '*[tT]eacher*.nii.gz')))
         self.transform = transform
 
     def __len__(self):

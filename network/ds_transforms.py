@@ -74,8 +74,10 @@ class CropRandomPatch(object):
 
 class ToTensor(object):
     def __call__(self, sample):
-        image, label = sample['image'], sample['label']
-        image = image.transpose((2, 0, 1))
-        label = label.transpose((2, 0, 1))
+        image, label, teacher = sample['image'], sample['label'], sample['teacher']
+        image = np.expand_dims(image.transpose((2, 0, 1)), axis=0)
+        label = np.expand_dims(label.transpose((2, 0, 1)), axis=0)
+        teacher = np.expand_dims(teacher.transpose((2, 0, 1)), axis=0)
         return {'image': torch.from_numpy(image),
-                'label': torch.from_numpy(label)}
+                'label': torch.from_numpy(label),
+                'teacher': torch.from_numpy(teacher)}
