@@ -36,11 +36,13 @@ class Training:
                 sleep(0.01)
                 self._train_epoch(device)
 
-                self.summary_writer_train.add_scalar("Loss", self.train_loss.compute(), epoch)
-                self.summary_writer_test.add_scalar("Loss", self.test_loss.compute(), epoch)
-                self.summary_writer_test.add_scalar("Dice Score", self.metric_fn.compute(), epoch)
+                self.summary_writer_train.add_scalar("Loss", self.train_loss.compute().item(), epoch)
+                self.summary_writer_test.add_scalar("Loss", self.test_loss.compute().item(), epoch)
+                self.summary_writer_test.add_scalar("Dice Score", self.metric_fn.compute().item(), epoch)
 
-                postfix = {"Dice Score": self.metric_fn.compute()}
+                postfix = {"Train Loss": self.train_loss.compute().item(),
+                           "Test Loss": self.test_loss.compute().item(),
+                           "Dice Score": self.metric_fn.compute().item()}
                 pbar.set_postfix(**postfix)
 
                 self.train_loss.reset()

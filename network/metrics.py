@@ -17,7 +17,7 @@ class DiceScore:
         self._dice_scores.append(torch.mean(dice))
 
     def compute(self):
-        return torch.mean(self._dice_scores)
+        return torch.mean(torch.FloatTensor(self._dice_scores))
 
 
 class Mean:
@@ -31,4 +31,4 @@ class Mean:
         self._values.append(value)
 
     def compute(self):
-        return torch.mean(self._values)
+        return torch.mean(torch.FloatTensor(self._values))

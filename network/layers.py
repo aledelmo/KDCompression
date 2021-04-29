@@ -56,13 +56,13 @@ class Encoder3DUnet(nn.Module):
 class Decoder3DUnet(nn.Module):
     def __init__(self, base_filters):
         super().__init__()
-        self.up_u0 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.up_u0 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear', align_corners=False)
         self.conv_u0 = Conv3DUnet(in_filters=base_filters * np.power(2, 3) + base_filters * np.power(2, 2),
                                   out_filters=base_filters * np.power(2, 2))
-        self.up_u1 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.up_u1 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear', align_corners=False)
         self.conv_u1 = Conv3DUnet(in_filters=base_filters * np.power(2, 2) + base_filters * np.power(2, 1),
                                   out_filters=base_filters * np.power(2, 1))
-        self.up_u2 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.up_u2 = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear', align_corners=False)
         self.conv_u2 = Conv3DUnet(in_filters=base_filters * np.power(2, 1) + base_filters * np.power(2, 0),
                                   out_filters=base_filters)
 

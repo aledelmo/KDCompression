@@ -21,9 +21,9 @@ class DiceLoss(_Loss):
 class KDLoss(DiceLoss):
     def __init__(self):
         super(KDLoss, self).__init__()
-        self.kld = torch.nn.KLDivLoss(reduction='mean')
+        self.kld = torch.nn.KLDivLoss(reduction='batchmean')
 
     def forward(self, input, target):
         hard_labels = target[0]
         teacher_labels = target[1]
-        return 1. - self.dice_score(input, hard_labels) + self.kld(input, teacher_labels)
+        return 1. - self.dice_score(input, hard_labels)  # + self.kld(input, teacher_labels)
