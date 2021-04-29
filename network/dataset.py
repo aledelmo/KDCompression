@@ -15,19 +15,18 @@ class MRIDataset(Dataset):
 
     def __getitem__(self, idx):
         img = self.ds["sample_{}".format(idx)]['img']
-        mask = self.ds["sample_{}".format(idx)]['mask']
         label = self.ds["sample_{}".format(idx)]['label']
         teacher = self.ds["sample_{}".format(idx)]['teacher']
 
-        img = np.multiply(img, mask)
-        label = np.multiply(label, mask)
-
-        sample = {"image": img, "label": label, "teacher": np.array(teacher)}
+        sample = {"image": np.array(img), "label": np.array(label), "teacher": np.array(teacher)}
 
         if self.transform:
             sample = self.transform(sample)
 
         return sample
+
+    def close(self):
+        self.ds.close()
 
 
 def train_val_dataset(dataset, val_split=0.25):
