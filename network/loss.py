@@ -5,7 +5,7 @@ from torch.nn.modules.loss import _Loss
 class DiceLoss(_Loss):
     def __init__(self):
         super(DiceLoss, self).__init__()
-        self.axis = (1,2,3)
+        self.axis = (2,3,4)
         self.smooth = 1e-7
 
     def forward(self, input, target):
