@@ -5,11 +5,8 @@ from time import sleep
 from .metrics import Mean
 
 import torch
-
 from torch.cuda.amp import autocast, GradScaler
 from torch.utils.tensorboard import SummaryWriter
-torch.backends.cudnn.deterministic = False
-torch.backends.cudnn.benchmark = True
 
 
 class Training:
@@ -30,13 +27,12 @@ class Training:
 
         self.scaler = GradScaler()
 
-    def train_model(self, epochs):
+    def train_model(self, epochs, patch_per_image):
         print('Training model...')
-        sleep(0.01)
         with tqdm(range(epochs), desc="Training", unit="epoch") as pbar:
             for epoch in pbar:
                 sleep(0.01)
-                self._train_epoch()
+                self._train_epoch(patch_per_image)
 
                 self.summary_writer_train.add_scalar("Loss", self.train_loss.compute().item(), epoch)
                 self.summary_writer_test.add_scalar("Loss", self.test_loss.compute().item(), epoch)
@@ -54,13 +50,15 @@ class Training:
         self.summary_writer_train.close()
         self.summary_writer_test.close()
 
-    def _train_epoch(self):
+    def _train_epoch(self, patch_per_image):
         self.model.train()
-        for sample in self.train_ds:
-            self._train_step(*sample)
+        for _ in range(patch_per_image):
+            for sample in self.train_ds:
+                self._train_step(*sample)
         self.model.eval()
-        for sample in self.test_ds:
-            self._test_step(*sample)
+        for _ in range(patch_per_image):
+            for sample in self.test_ds:
+                self._test_step(*sample)
 
     def _train_step(self, x_train, y_train, y_teacher_train):
         self.optimizer.zero_grad(set_to_none=True)
