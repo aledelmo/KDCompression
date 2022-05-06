@@ -16,7 +16,27 @@ class ToTensor(object):
                    torch.from_numpy(sample['teacher'])
 
 
-class RandomCropCollate:
+class DataAugmentation(object):
+    def __call__(self, sample):
+        if torch.rand(1) < 0.1:
+            sample['image'] = sample['image'][::-1].copy()
+            sample['label'] = sample['label'][::-1].copy()
+            sample['teacher'] = sample['teacher'][::-1].copy()
+
+        r = 0.5
+        delta = np.random.uniform(-r, r)
+        sample['image'] = sample['image'] + delta
+
+        r1 = 0.75
+        r2 = 1.25
+        contrast_factor = np.random.uniform(r1, r2)
+        m = np.mean(sample['image'])
+        sample['image'] = (sample['image'] - m) * contrast_factor + m
+
+        return sample
+
+
+class RandomCropCollate(object):
     def __init__(self, patch_size):
         self.dim_x_l, self.dim_x_h = (np.floor(patch_size[0] / 2).astype(np.int32),
                                       np.ceil(patch_size[0] / 2).astype(np.int32))
@@ -25,14 +45,14 @@ class RandomCropCollate:
         self.dim_z_l, self.dim_z_h = (np.floor(patch_size[2] / 2).astype(np.int32),
                                       np.ceil(patch_size[2] / 2).astype(np.int32))
 
-    def collate(self, batch, device):
+    def collate(self, batch, device, multi_class=False):
         cropped_image = []
         cropped_label = []
         cropped_teacher = []
         for b in batch:
             current_x, current_y, current_teacher = b[0].to(device=device, non_blocking=True),\
                                                     b[1].to(device=device, non_blocking=True),\
-                                                    b[2].to(device=device, non_blocking=True),
+                                                    b[2].to(device=device, non_blocking=True)
 
             idx = torch.where(current_y > 0)
             idx = torch.stack(idx, dim=1)
@@ -83,9 +103,14 @@ class RandomCropCollate:
             current_y = current_y[:, idx[1] - self.dim_z_l:idx[1] + self.dim_z_h,
                                   idx[2] - self.dim_x_l:idx[2] + self.dim_x_h,
                                   idx[3] - self.dim_y_l:idx[3] + self.dim_y_h]
-            current_teacher = current_teacher[:, idx[1] - self.dim_z_l:idx[1] + self.dim_z_h,
-                                              idx[2] - self.dim_x_l:idx[2] + self.dim_x_h,
-                                              idx[3] - self.dim_y_l:idx[3] + self.dim_y_h]
+            if multi_class:
+                current_teacher = current_teacher[0, :, idx[1] - self.dim_z_l:idx[1] + self.dim_z_h,
+                                  idx[2] - self.dim_x_l:idx[2] + self.dim_x_h,
+                                  idx[3] - self.dim_y_l:idx[3] + self.dim_y_h]
+            else:
+                current_teacher = current_teacher[:, idx[1] - self.dim_z_l:idx[1] + self.dim_z_h,
+                                                  idx[2] - self.dim_x_l:idx[2] + self.dim_x_h,
+                                                  idx[3] - self.dim_y_l:idx[3] + self.dim_y_h]
 
             cropped_image.append(current_x)
             cropped_label.append(current_y)

@@ -87,4 +87,11 @@ class Classification3DUnet(nn.Module):
 
     def forward(self, x):
         conv_c = self.conv(x)
-        return self.act(conv_c)
+        return conv_c  # self.act(conv_c)
+
+
+class Classification3DUnetMulti(Classification3DUnet):
+    def __init__(self, base_filters, n_classes):
+        super(Classification3DUnetMulti, self).__init__(base_filters)
+        self.conv = nn.Conv3d(in_channels=base_filters, out_channels=n_classes, kernel_size=1,
+                              stride=1, padding=0)

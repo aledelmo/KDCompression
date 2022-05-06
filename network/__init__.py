@@ -2,4 +2,4 @@ from .net import UNet3D
 from .training import Training
 from .loss import DiceLoss
 from .metrics import DiceScore
-from .ds_transforms import ToTensor, RandomCropCollate
+from .ds_transforms import ToTensor, DataAugmentation, RandomCropCollate
