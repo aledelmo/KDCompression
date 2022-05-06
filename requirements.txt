@@ -95,7 +95,7 @@ nest-asyncio=1.5.1=pyhd8ed1ab_0
 nettle=3.6=he412f7d_0
 nibabel=3.2.1=pyhd8ed1ab_0
 ninja=1.10.2=h4bd325d_0
-notebook=6.3.0=pyha770c72_1
+notebook>=6.4.10
 numpy=1.20.1=py39h93e21f0_0
 numpy-base=1.20.1=py39h7d8b39e_0
 oauthlib=3.0.1=py_0
